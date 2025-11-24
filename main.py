@@ -4,8 +4,9 @@ FastAPI + TensorFlow/Keras
 """
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
@@ -36,7 +37,7 @@ app.add_middleware(
 
 # Constantes del modelo (deben coincidir con tu entrenamiento)
 IMG_SIZE = 128
-MODEL_PATH = "modelo_fotos.keras" 
+MODEL_PATH = "age_predictor_model.h5"  # o .keras si prefieres
 
 # Variable global para el modelo
 model = None
@@ -46,19 +47,7 @@ def load_model():
     """Carga el modelo entrenado al iniciar la API"""
     global model
     try:
-        # Definir la capa personalizada que usa tu modelo
-        class IdentityNormalization(keras.layers.Layer):
-            def call(self, inputs):
-                return inputs
-            
-            def get_config(self):
-                return super().get_config()
-        
-        model = keras.models.load_model(
-            MODEL_PATH, 
-            custom_objects={'IdentityNormalization': IdentityNormalization},
-            compile=False
-        )
+        model = keras.models.load_model(MODEL_PATH, compile=False)
         logger.info(f"✅ Modelo cargado exitosamente desde {MODEL_PATH}")
     except Exception as e:
         logger.error(f"❌ Error al cargar el modelo: {str(e)}")
@@ -100,19 +89,23 @@ async def startup_event():
     load_model()
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    """Endpoint raíz con información de la API"""
-    return {
-        "message": "🎯 Age Prediction API - Deep Learning",
-        "version": "1.0.0",
-        "status": "running",
-        "endpoints": {
-            "predict": "/predict",
-            "health": "/health",
-            "docs": "/docs"
-        }
-    }
+    """Endpoint raíz que muestra el frontend"""
+    try:
+        with open("index.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return JSONResponse({
+            "message": "🎯 Age Prediction API - Deep Learning",
+            "version": "1.0.0",
+            "status": "running",
+            "endpoints": {
+                "predict": "/predict",
+                "health": "/health",
+                "docs": "/docs"
+            }
+        })
 
 
 @app.get("/health")
