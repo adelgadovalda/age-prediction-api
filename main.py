@@ -47,7 +47,19 @@ def load_model():
     """Carga el modelo entrenado al iniciar la API"""
     global model
     try:
-        model = keras.models.load_model(MODEL_PATH, compile=False)
+        # Definir la capa personalizada que usa tu modelo
+        class IdentityNormalization(keras.layers.Layer):
+            def call(self, inputs):
+                return inputs
+            
+            def get_config(self):
+                return super().get_config()
+        
+        model = keras.models.load_model(
+            MODEL_PATH, 
+            custom_objects={'IdentityNormalization': IdentityNormalization},
+            compile=False
+        )
         logger.info(f"✅ Modelo cargado exitosamente desde {MODEL_PATH}")
     except Exception as e:
         logger.error(f"❌ Error al cargar el modelo: {str(e)}")
