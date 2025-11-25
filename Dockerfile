@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar todo el código de la aplicación
 COPY main.py .
 COPY modelo_fotos.keras .
+COPY index.html .
 
 # Exponer el puerto 8000
 EXPOSE 8000
