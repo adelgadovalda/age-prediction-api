@@ -37,7 +37,7 @@ app.add_middleware(
 
 # Constantes del modelo (deben coincidir con tu entrenamiento)
 IMG_SIZE = 128
-MODEL_PATH = "age_predictor_model.h5"  # o .keras si prefieres
+MODEL_PATH = "modelo_fotos.keras"
 
 # Variable global para el modelo
 model = None
